@@ -62,13 +62,6 @@ body {
   color: #ccc;
 }
 
-.error .text {
-  color: red;
-}
-.error .type {
-  color: red;
-}
-
 #input .type {
   color: #59f;
 }
@@ -104,15 +97,15 @@ body {
 .log.warnLevel .type {
   color: #880;
 }
-.log.errorLevel {
+.log.errorLevel, .error {
   background-color: #fee;
   border-top: 1px solid #fbb;
   border-bottom: 1px solid #fbb;
 }
-.log.errorLevel .text {
+.log.errorLevel .text, .error .text {
   color: #c00;
 }
-.log.errorLevel .type {
+.log.errorLevel .type, .error .type {
   color: #800;
 }
 
@@ -194,6 +187,10 @@ div#input {
 .undefinedType {
   color: #888;
 }
+.functionType {
+  color: #666;
+  font-style: italic;
+}
 
 #autocomplete-anchor {
   position: relative;
@@ -217,7 +214,7 @@ div#input {
   font-weight: bold;
 }
 .ac-new {
-  color: #888;
+  color: #666;
 }
 .ac-selected {
   background-color: #ccddff;
