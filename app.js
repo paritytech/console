@@ -225,6 +225,18 @@ document.getElementById("command").addEventListener("keydown", function(event) {
       event.preventDefault();
       cancelAutocomplete();
     }
+  } else {
+    let command = document.getElementById("command");
+    if (event.keyCode == 38 && window.historyIndex > 0) {
+      event.preventDefault();
+      window.historyIndex--;
+      command.value = window.historyData[window.historyIndex];
+    }
+    if (event.keyCode == 40 && window.historyIndex < window.historyData.length) {
+      event.preventDefault();
+      window.historyIndex++;
+      command.value = window.historyIndex < window.historyData.length ? window.historyData[window.historyIndex] : "";
+    }
   }
   if (event.keyCode >= 48 || event.keyCode == 8) {
     let t = document.getElementById("command").value;
@@ -245,19 +257,6 @@ document.getElementById("command").addEventListener("keyup", function(event) {
   if (event.keyCode == 13) {
     event.preventDefault();
     exec();
-  }
-  if (currentAuto == null) {
-    let command = document.getElementById("command");
-    if (event.keyCode == 38 && window.historyIndex > 0) {
-      event.preventDefault();
-      window.historyIndex--;
-      command.value = window.historyData[window.historyIndex];
-    }
-    if (event.keyCode == 40 && window.historyIndex < window.historyData.length) {
-      event.preventDefault();
-      window.historyIndex++;
-      command.value = window.historyIndex < window.historyData.length ? window.historyData[window.historyIndex] : "";
-    }
   }
 });
 
