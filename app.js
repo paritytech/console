@@ -61,30 +61,38 @@ window.historyData = JSON.parse(localStorage.history);
 window.historyIndex = window.historyData.length;
 if (!localStorage.watches)
   localStorage.watches = "[]";
-window.watches = [];
+window.watches = {};
 
 function watch(name, f) {
   let status = document.getElementById("status");
-  status.innerHTML += '<div class="watch" id="watch' + window.watches.length + '"><span class="expr" id="expr' + window.watches.length + '"">'+escapeHtml(name)+'</span><span class="res" id="res' + window.watches.length + '""></span></div>';
-  window.watches.push(f);
+  let cleanName = name.replace(/[^a-zA-Z0-9]/, '');
+  status.innerHTML += `<div class="watch" id="watch_${cleanName}"><span class="expr" id="expr_${cleanName}">${escapeHtml(name)}</span><span class="res" id="res_${cleanName}"></span></div>`;
+  window.watches[name] = f;
 }
-
-if (typeof(window.parity) == 'object')
-  watch('latest', () => window.web3.eth.blockNumber);
-else
-  watch('time', () => new Date);
 
 var savedWatches = JSON.parse(localStorage.watches);
 savedWatches.forEach(w => watch(w[1], () => evaluate(w[0])));
 
+if (typeof(window.web3) == 'object' && window.watches.latest == undefined)
+  watch('latest', () => window.web3.eth.blockNumber);
+
+
 function refreshWatches() {
-  window.watches.forEach((x, i) => {
-    let r = x();
+  for (n in window.watches) {
+    let r = window.watches[n]();
+    let cn = n.replace(/[^a-zA-Z0-9]/, '');
+    let e = document.getElementById(`res_${cn}`);
     if (typeof(r) == 'object' && r.constructor.name == "Promise")
-      r.then(r => document.getElementById('res' + i).innerHTML = displayReady(r));
+      r.then(r => e.innerHTML = displayReady(r));
     else
-      document.getElementById('res' + i).innerHTML = displayReady(r);
-  });
+      e.innerHTML = displayReady(r);
+  }
+}
+
+function removeWatch(name) {
+  let e = document.getElementById(`watch_${name}`);
+  e.parentNode.removeChild(e);
+  delete window.watches[name];
 }
 
 function newLog(level, text) {
@@ -111,7 +119,13 @@ function exec() {
     window.historyIndex = window.historyData.length;
 
     var html = '';
-    if (c.indexOf("//") != -1) {
+    if (c.indexOf("//") == 0) {
+      let n = c.substr(2);
+      savedWatches = savedWatches.filter(x => x[1] != n);
+      localStorage.watches = JSON.stringify(savedWatches);
+      removeWatch(n);
+    }
+    else if (c.indexOf("//") != -1) {
       x = c.split("//");
       let e = x[0];
       savedWatches.push(x);
@@ -119,12 +133,13 @@ function exec() {
       watch(x[1], () => evaluate(e));
       pushLine('<div class="entry command"><span class="type">&gt;</span><span class="text">' + escapeHtml(c) + '</span></div>');
       pushLine('<div class="entry addwatch"><span class="type">✓</span><span class="text">Watch added</span></div>');
-    } else {
+    }
+    else {
       pushLine('<div class="entry command"><span class="type">&gt;</span><span class="text">' + escapeHtml(c) + '</span></div>');
       let res;
       try {
         res = evaluate(c);
-        if (typeof(res) == 'object' && res.constructor.name == "Promise") {
+        if (typeof(res) == 'object' && res !== null && res.constructor.name == "Promise") {
           let id = window.historyData.length;
           pushLine('<div class="entry result"><span class="type">&lt;</span><span class="text" id="pending' + id + '">...</span></div>');
           res.then(r => document.getElementById('pending' + id).innerHTML = displayReady(r));
