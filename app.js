@@ -222,8 +222,10 @@ function scrollAutocomplete(positive) {
   }
 }
 
-document.getElementById("command").addEventListener("onpaste", updateAutocomplete);
-document.getElementById("command").addEventListener("oninput", updateAutocomplete);
+document.getElementById("command").addEventListener("paste", updateAutocomplete);
+document.getElementById("command").addEventListener("input", updateAutocomplete);
+document.getElementById("command").addEventListener("focusout", cancelAutocomplete);
+document.getElementById("command").addEventListener("blur", cancelAutocomplete);
 
 document.getElementById("command").addEventListener("keydown", function(event) {
   let el = document.getElementById("command"); 
